@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 )
@@ -53,16 +52,4 @@ func createSnippet(write http.ResponseWriter, request *http.Request) {
 	write.Header().Set("Content-Type", "application/json")
 	write.Write([]byte(`{"name":"Alex"}`))
 
-}
-func main() {
-	//http.HandleFunc()
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", index)
-	mux.HandleFunc("/snippet", showSnippet)
-	mux.HandleFunc("/snippet/create", createSnippet)
-
-	//http.HandleFunc("/hello", viewHandler)
-	log.Println("run server")
-	err := http.ListenAndServe("localhost:8080", mux)
-	log.Fatal(err)
 }

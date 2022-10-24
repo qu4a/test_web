@@ -9,8 +9,8 @@ func main() {
 	//http.HandleFunc()
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", index)
-	mux.HandleFunc("/snippet", sh)owSnippet)
-	mux.HandleFunc("/snippet/create", createSnippet
+	mux.HandleFunc("/snippet", showSnippet)
+	mux.HandleFunc("/snippet/create", createSnippet)
 
 	//http.HandleFunc("/hello", viewHandler)
 	log.Println("run server")

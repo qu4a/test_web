@@ -15,6 +15,7 @@ func index(write http.ResponseWriter, request *http.Request) {
 	files := []string{
 		"ui/html/home.page.tmpl",
 		"ui/html/base.layout.tmpl",
+		"ui/html/footer.partial.tmpl",
 	}
 
 	// Проверяется, если текущий путь URL запроса точно совпадает с шаблоном "/". Если нет, вызывается

@@ -10,14 +10,6 @@ import (
 
 // с обработчиком главноей страницы
 func index(write http.ResponseWriter, request *http.Request) {
-	// Инициализируем срез содержащий пути к двум файлам. Обратите внимание, что
-	// файл home.page.tmpl должен быть *первым* файлом в срезе.
-	files := []string{
-		"ui/html/home.page.tmpl",
-		"ui/html/base.layout.tmpl",
-		"ui/html/footer.partial.tmpl",
-	}
-
 	// Проверяется, если текущий путь URL запроса точно совпадает с шаблоном "/". Если нет, вызывается
 	// функция http.NotFound() для возвращения клиенту ошибки 404.
 	// Важно, чтобы мы завершили работу обработчика через return. Если мы забудем про "return", то обработчик
@@ -26,6 +18,15 @@ func index(write http.ResponseWriter, request *http.Request) {
 		http.NotFound(write, request)
 		return
 	}
+
+	// Инициализируем срез содержащий пути к двум файлам. Обратите внимание, что
+	// файл home.page.tmpl должен быть *первым* файлом в срезе.
+	files := []string{
+		"ui/html/home.page.tmpl",
+		"ui/html/base.layout.tmpl",
+		"ui/html/footer.partial.tmpl",
+	}
+
 	//write.Write([]byte("Test"))
 	// Используем функцию template.ParseFiles() для чтения файла шаблона.
 	// Если возникла ошибка, мы запишем детальное сообщение ошибки и

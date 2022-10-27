@@ -3,13 +3,16 @@ package main
 import (
 	"fmt"
 	"html/template"
-	"log"
 	"net/http"
 	"strconv"
 )
 
-// с обработчиком главноей страницы
-func index(write http.ResponseWriter, request *http.Request) {
+/*
+Меняем сигнатуры обработчика home, чтобы он определялся как метод
+структуры *application.
+*/
+
+func (app *application) index(write http.ResponseWriter, request *http.Request) {
 	// Проверяется, если текущий путь URL запроса точно совпадает с шаблоном "/". Если нет, вызывается
 	// функция http.NotFound() для возвращения клиенту ошибки 404.
 	// Важно, чтобы мы завершили работу обработчика через return. Если мы забудем про "return", то обработчик
@@ -34,7 +37,7 @@ func index(write http.ResponseWriter, request *http.Request) {
 	// ответ: 500 Internal Server Error (Внутренняя ошибка на сервере)
 	ts, err := template.ParseFiles(files...)
 	if err != nil {
-		log.Println(err.Error())
+		app.errorLog.Println(err.Error())
 		http.Error(write, "Internal Server Error", 500)
 		return
 	}
@@ -42,13 +45,26 @@ func index(write http.ResponseWriter, request *http.Request) {
 	// шаблона в тело HTTP ответа. Последний параметр в Execute() предоставляет
 	// возможность отправки динамических данных в шаблон.
 	err = ts.Execute(write, nil)
+	/*
+		Обновляем код для использования логгера-ошибок из структуры application.
+	*/
 	if err != nil {
-		log.Println(err.Error())
+		/*
+			Поскольку обработчик home теперь является методом структуры application
+			он может получить доступ к логгерам из структуры.
+			Используем их вместо стандартного логгера от Go.
+		*/
+		app.errorLog.Println(err.Error())
 		http.Error(write, "Internal Server Error", 500)
 		return
 	}
 }
-func showSnippet(write http.ResponseWriter, request *http.Request) {
+
+/*
+Меняем сигнатуру обработчика showSnippet, чтобы он был определен как метод
+структуры *application
+*/
+func (app *application) showSnippet(write http.ResponseWriter, request *http.Request) {
 	// Извлекаем значение параметра id из URL и попытаемся
 	// конвертировать строку в integer используя функцию strconv.Atoi(). Если его нельзя
 	// конвертировать в integer, или значение меньше 1, возвращаем ответ
@@ -65,7 +81,7 @@ func showSnippet(write http.ResponseWriter, request *http.Request) {
 }
 
 // обработчик для создания заметок
-func createSnippet(write http.ResponseWriter, request *http.Request) {
+func (app *application) createSnippet(write http.ResponseWriter, request *http.Request) {
 	// Используем r.Method для проверки, использует ли запрос метод POST или нет. Обратите внимание,
 	// что http.MethodPost является строкой и содержит текст "POST".
 	if request.Method != http.MethodPost {
@@ -79,7 +95,11 @@ func createSnippet(write http.ResponseWriter, request *http.Request) {
 		*/
 		return
 	}
-	write.Header().Set("Content-Type", "application/json")
-	write.Write([]byte(`{"name":"Alex"}`))
+	/*
+		Под json:
+		write.Header().Set("Content-Type", "application/json")
+		write.Write([]byte(`{"name":"Alex"}`))
+	*/
+	write.Write([]byte("Новая заметка"))
 
 }

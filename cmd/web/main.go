@@ -4,8 +4,21 @@ import (
 	"flag"
 	"log"
 	"net/http"
+
+	//"net/http"
 	"os"
 )
+
+/*
+	Создаем структуру `application` для хранения зависимостей всего веб-приложения.
+	Пока, что мы добавим поля только для двух логгеров, но
+	мы будем расширять данную структуру по мере усложнения приложения.
+*/
+
+type application struct {
+	errorLog *log.Logger
+	infoLog  *log.Logger
+}
 
 func main() {
 	/*
@@ -44,10 +57,17 @@ func main() {
 	*/
 
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+
+	// Инициализируем новую структуру с зависимостями приложения
+	app := &application{
+		errorLog: errorLog,
+		infoLog:  infoLog,
+	}
+
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", index)
-	mux.HandleFunc("/snippet", showSnippet)
-	mux.HandleFunc("/snippet/create", createSnippet)
+	mux.HandleFunc("/", app.index)
+	mux.HandleFunc("/snippet", app.showSnippet)
+	mux.HandleFunc("/snippet/create", app.createSnippet)
 	/*Инициализируем FileServer, он будет обрабатывать
 	  HTTP-запросы к статическим файлам из папки "./ui/static".
 	  Обратите внимание, что переданный в функцию http.Dir путь

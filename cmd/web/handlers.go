@@ -18,7 +18,7 @@ func (app *application) index(write http.ResponseWriter, request *http.Request) 
 	// Важно, чтобы мы завершили работу обработчика через return. Если мы забудем про "return", то обработчик
 	// продолжит работу и выведет сообщение "Привет из SnippetBox" как ни в чем не бывало.
 	if request.URL.Path != "/" {
-		http.NotFound(write, request)
+		app.notFound(write) //Использование помощника notFound()
 		return
 	}
 
@@ -37,8 +37,8 @@ func (app *application) index(write http.ResponseWriter, request *http.Request) 
 	// ответ: 500 Internal Server Error (Внутренняя ошибка на сервере)
 	ts, err := template.ParseFiles(files...)
 	if err != nil {
-		app.errorLog.Println(err.Error())
-		http.Error(write, "Internal Server Error", 500)
+		//app.errorLog.Println(err.Error())
+		app.serverError(write, err) //Использование помощника serverError
 		return
 	}
 	// Затем мы используем метод Execute() для записи содержимого
@@ -54,8 +54,8 @@ func (app *application) index(write http.ResponseWriter, request *http.Request) 
 			он может получить доступ к логгерам из структуры.
 			Используем их вместо стандартного логгера от Go.
 		*/
-		app.errorLog.Println(err.Error())
-		http.Error(write, "Internal Server Error", 500)
+		//app.errorLog.Println(err.Error())
+		app.serverError(write, err)
 		return
 	}
 }
@@ -71,7 +71,7 @@ func (app *application) showSnippet(write http.ResponseWriter, request *http.Req
 	// 404 - страница не найдена!
 	id, err := strconv.Atoi(request.URL.Query().Get("id"))
 	if err != nil || id < 1 {
-		http.NotFound(write, request)
+		app.notFound(write) //Использование помощника notFound()
 		return
 	}
 	fmt.Fprintf(write, "Отображение выбранной заметки с ID %d...", id)
@@ -87,7 +87,7 @@ func (app *application) createSnippet(write http.ResponseWriter, request *http.R
 	if request.Method != http.MethodPost {
 		write.Header().Set("Allow", http.MethodPost) //добавление заголовка к http запросу
 		// Используем функцию http.Error() для отправки кода состояния 405 с соответствующим сообщением.
-		http.Error(write, "Метод запрещен", 405)
+		app.clientError(write, http.StatusMethodNotAllowed)
 
 		/*уже не нужены строки, т.к http.Error обрабатывает запрос и выводит тоже самое
 		write.WriteHeader(405)

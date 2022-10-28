@@ -63,22 +63,22 @@ func main() {
 		errorLog: errorLog,
 		infoLog:  infoLog,
 	}
-
+	/* Перенос объявление маршрутов в routes.go
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", app.index)
 	mux.HandleFunc("/snippet", app.showSnippet)
 	mux.HandleFunc("/snippet/create", app.createSnippet)
 	/*Инициализируем FileServer, он будет обрабатывать
-	  HTTP-запросы к статическим файлам из папки "./ui/static".
-	  Обратите внимание, что переданный в функцию http.Dir путь
-	  является относительным корневой папке проекта*/
-	fileServer := http.FileServer(http.Dir("./ui/static/"))
+	HTTP-запросы к статическим файлам из папки "./ui/static".
+	Обратите внимание, что переданный в функцию http.Dir путь
+	является относительным корневой папке проекта*/
+	//fileServer := http.FileServer(http.Dir("./ui/static/"))
 
 	// Используем функцию mux.Handle() для регистрации обработчика для
 	// всех запросов, которые начинаются с "/static/". Мы убираем
 	// префикс "/static" перед тем как запрос достигнет http.FileServer
 	//mux.Handle("/static", http.NotFoundHandler())
-	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
+	//mux.Handle("/static/", http.StripPrefix("/static", fileServer))
 	/*
 		Значение, возвращаемое функцией flag.String(), является указателем на значение
 		из флага, а не самим значением. Нам нужно убрать ссылку на указатель
@@ -98,7 +98,7 @@ func main() {
 	srv := &http.Server{
 		Addr:     *addr,
 		ErrorLog: errorLog,
-		Handler:  mux,
+		Handler:  app.routes(),
 	}
 
 	// Вызываем метод ListenAndServe() от нашей новой структуры http.Server

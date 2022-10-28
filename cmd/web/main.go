@@ -47,7 +47,6 @@ func main() {
 		log.Fatal(err)
 	}
 	defer f.Close()
-
 	infoLog := log.New(f, "INFO\t", log.Ldate|log.Ltime)
 
 	/*
@@ -98,7 +97,7 @@ func main() {
 	srv := &http.Server{
 		Addr:     *addr,
 		ErrorLog: errorLog,
-		Handler:  app.routes(),
+		Handler:  app.routes(), // вызов новго метода app.routes
 	}
 
 	// Вызываем метод ListenAndServe() от нашей новой структуры http.Server

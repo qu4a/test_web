@@ -7,17 +7,21 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"test_web/pkg/models/mysql"
 )
 
 /*
 	Создаем структуру `application` для хранения зависимостей всего веб-приложения.
 	Пока, что мы добавим поля только для двух логгеров, но
 	мы будем расширять данную структуру по мере усложнения приложения.
+	Добавляем поле snippet в структуру application. Это позволит
+	сделать объект SnippetModel доступным для наших обработчиков.
 */
 
 type application struct {
 	errorLog *log.Logger
 	infoLog  *log.Logger
+	snippet  *mysql.SnippetModel
 }
 
 func main() {
@@ -70,10 +74,12 @@ func main() {
 	}
 	//Вызываем отложенный выхов функции чтобы пулл соедиения был закрыт до выхода из  main()
 	defer db.Close()
-	// Инициализируем новую структуру с зависимостями приложения
+	// Инициализируем новую структуру с зависимостями приложения.
+	//Инициализируем экземпляр mysql.SnippetModel и добавляем его в зависимостях.
 	app := &application{
 		errorLog: errorLog,
 		infoLog:  infoLog,
+		snippet:  &mysql.SnippetModel{DB: db},
 	}
 	/* Перенос объявление маршрутов в routes.go
 	mux := http.NewServeMux()

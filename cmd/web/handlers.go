@@ -95,11 +95,21 @@ func (app *application) createSnippet(write http.ResponseWriter, request *http.R
 		*/
 		return
 	}
+	title := "История про улитку"
+	content := "Улитка выползла из раковины,\nвытянула рожки,\nи опять подобрала их."
+	expires := "7"
+	id, err := app.snippet.Insert(title, content, expires)
+	if err != nil {
+		app.serverError(write, err)
+		return
+	}
 	/*
 		Под json:
 		write.Header().Set("Content-Type", "application/json")
 		write.Write([]byte(`{"name":"Alex"}`))
 	*/
-	write.Write([]byte("Новая заметка"))
+	//write.Write([]byte("Новая заметка"))
+	// Перенаправляем пользователя на соответствующую страницу заметки.
+	http.Redirect(write, request, fmt.Sprintf("/snippet?id=%d", id), http.StatusSeeOther)
 
 }

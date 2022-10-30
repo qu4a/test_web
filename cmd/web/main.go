@@ -1,11 +1,11 @@
 package main
 
 import (
+	"database/sql"
 	"flag"
+	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"net/http"
-
-	//"net/http"
 	"os"
 )
 
@@ -27,6 +27,9 @@ func main() {
 		Значение флага будет сохранено в переменной addr.
 	*/
 	addr := flag.String("addr", ":4000", "Сетевой адрес HTTP")
+
+	// Определение нового флага из командной строки для настройки MySQL подключения.
+	dsn := flag.String("dsn", "web:#corebit101@/webapp?parseTime=true", "Название MySQL источника данных")
 	/*
 		Мы вызываем функцию flag.Parse() для извлечения флага из командной строки.
 		Она считывает значение флага из командной строки и присваивает его содержимое
@@ -56,7 +59,17 @@ func main() {
 	*/
 
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
-
+	/*
+		Чтобы функция main() была более компактной, мы поместили код для создания
+		пула соединений в отдельную функцию openDB(). Мы передаем в нее полученный
+		источник данных (DSN) из флага командной строки.
+	*/
+	db, err := openDB(*dsn)
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+	//Вызываем отложенный выхов функции чтобы пулл соедиения был закрыт до выхода из  main()
+	defer db.Close()
 	// Инициализируем новую структуру с зависимостями приложения
 	app := &application{
 		errorLog: errorLog,
@@ -104,6 +117,16 @@ func main() {
 	infoLog.Printf("Запуск сервера на %s", *addr)
 	err = srv.ListenAndServe()
 	errorLog.Fatal(err)
+}
+func openDB(dsn string) (*sql.DB, error) {
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		return nil, err
+	}
+	if err = db.Ping(); err != nil {
+		return nil, err
+	}
+	return db, nil
 }
 
 /*

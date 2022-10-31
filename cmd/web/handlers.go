@@ -1,10 +1,12 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"html/template"
 	"net/http"
 	"strconv"
+	"test_web/pkg/models"
 )
 
 /*
@@ -74,7 +76,20 @@ func (app *application) showSnippet(write http.ResponseWriter, request *http.Req
 		app.notFound(write) //Использование помощника notFound()
 		return
 	}
-	fmt.Fprintf(write, "Отображение выбранной заметки с ID %d...", id)
+	// Вызываем метода Get из модели Snipping для извлечения данных для
+	// конкретной записи на основе её ID. Если подходящей записи не найдено,
+	// то возвращается ответ 404 Not Found (Страница не найдена).
+	s, err := app.snippet.Get(id)
+	if err != nil {
+		if errors.Is(err, models.ErrNotRecord) {
+			app.notFound(write)
+		} else {
+			app.serverError(write, err)
+		}
+		return
+	}
+	//отображаем весь вывод на странице
+	fmt.Fprintf(write, "%v", s)
 
 	//write.Write([]byte("showSnippet"))
 

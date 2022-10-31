@@ -73,5 +73,44 @@ func (m *SnippetModel) Get(id int) (*models.Snippet, error) {
 
 // Latest - Метод возвращает 10 наиболее часто используемые заметки.
 func (m *SnippetModel) Latest() ([]*models.Snippet, error) {
-	return nil, nil
+	smtm := `SELECT id, title, content, created, expires FROM snippet
+    WHERE expires > UTC_TIMESTAMP() ORDER BY created DESC LIMIT 10`
+	// Используем метод Query() для выполнения нашего SQL запроса.
+	// В ответ мы получим sql.Rows, который содержит результат нашего запроса.
+	rows, err := m.DB.Query(smtm)
+	if err != nil {
+		return nil, err
+	}
+	// Откладываем вызов rows.Close(), чтобы быть уверенным, что набор результатов из sql.Rows
+	// правильно закроется перед вызовом метода Latest(). Этот оператор откладывания
+	// должен выполнится *после* проверки на наличие ошибки в методе Query().
+	// В противном случае, если Query() вернет ошибку, это приведет к панике
+	// так как он попытается закрыть набор результатов у которого значение: nil.
+	defer rows.Close()
+	//инициализируем пустой срез для хранения объевтов model.Snippet
+	var snippets []*models.Snippet
+	// Используем rows.Next() для перебора результата. Этот метод предоставляем
+	// первый а затем каждую следующею запись из базы данных для обработки
+	// методом rows.Scan().
+	for rows.Next() {
+		// Создаем указатель на новую структуру Snippet
+		s := &models.Snippet{}
+		// Используем rows.Scan(), чтобы скопировать значения полей в структуру.
+		// Опять же, аргументы предоставленные в row.Scan()
+		// должны быть указателями на место, куда требуется скопировать данные и
+		// количество аргументов должно быть точно таким же, как количество
+		// столбцов из таблицы базы данных, возвращаемых вашим SQL запросом.
+		err = rows.Scan(&s.ID, &s.Title, &s.Content, &s.Created, &s.Expires)
+		if err != nil {
+			return nil, err
+		}
+		// Добавляем структуру в срез.
+		snippets = append(snippets, s)
+	}
+	// Когда цикл rows.Next() завершается, вызываем метод rows.Err(), чтобы узнать
+	// если в ходе работы у нас не возникла какая либо ошибка.
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return snippets, nil
 }

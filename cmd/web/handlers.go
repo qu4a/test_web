@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"html/template"
 	"net/http"
 	"strconv"
 	"test_web/pkg/models"
@@ -23,43 +22,51 @@ func (app *application) index(write http.ResponseWriter, request *http.Request) 
 		app.notFound(write) //Использование помощника notFound()
 		return
 	}
+	s, err := app.snippet.Latest()
+	if err != nil {
+		app.serverError(write, err)
+		return
+	}
+	for _, snippet := range s {
+		fmt.Fprintf(write, "%v\n", snippet)
+	}
 
 	// Инициализируем срез содержащий пути к двум файлам. Обратите внимание, что
 	// файл home.page.tmpl должен быть *первым* файлом в срезе.
-	files := []string{
-		"ui/html/home.page.tmpl",
-		"ui/html/base.layout.tmpl",
-		"ui/html/footer.partial.tmpl",
-	}
+	//files := []string{
+	//	"ui/html/home.page.tmpl",
+	//	"ui/html/base.layout.tmpl",
+	//	"ui/html/footer.partial.tmpl",
+	//}
 
 	//write.Write([]byte("Test"))
 	// Используем функцию template.ParseFiles() для чтения файла шаблона.
 	// Если возникла ошибка, мы запишем детальное сообщение ошибки и
 	// используя функцию http.Error() мы отправим пользователю
 	// ответ: 500 Internal Server Error (Внутренняя ошибка на сервере)
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		//app.errorLog.Println(err.Error())
-		app.serverError(write, err) //Использование помощника serverError
-		return
-	}
+	//ts, err := template.ParseFiles(files...)
+	//if err != nil {
+	//app.errorLog.Println(err.Error())
+	//	app.serverError(write, err) //Использование помощника serverError
+	//	return
+	//}
 	// Затем мы используем метод Execute() для записи содержимого
 	// шаблона в тело HTTP ответа. Последний параметр в Execute() предоставляет
 	// возможность отправки динамических данных в шаблон.
-	err = ts.Execute(write, nil)
+	//err = ts.Execute(write, nil)
 	/*
 		Обновляем код для использования логгера-ошибок из структуры application.
 	*/
-	if err != nil {
-		/*
-			Поскольку обработчик home теперь является методом структуры application
-			он может получить доступ к логгерам из структуры.
-			Используем их вместо стандартного логгера от Go.
-		*/
-		//app.errorLog.Println(err.Error())
-		app.serverError(write, err)
-		return
-	}
+	//if err != nil {
+	/*
+		Поскольку обработчик home теперь является методом структуры application
+		он может получить доступ к логгерам из структуры.
+		Используем их вместо стандартного логгера от Go.
+	*/
+	//app.errorLog.Println(err.Error())
+	//	app.serverError(write, err)
+	//	return
+	//}
 }
 
 /*

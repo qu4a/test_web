@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"html/template"
 	"net/http"
 	"strconv"
 	"test_web/pkg/models"
@@ -95,8 +96,24 @@ func (app *application) showSnippet(write http.ResponseWriter, request *http.Req
 		}
 		return
 	}
+	//Инцелизируем срез, содержащий путь к файлу show.page.tmpl,
+	//добавив еще базовый шаблон и часть футера
+	files := []string{
+		"ui/html/show.page.tmpl",
+		"ui/html/base.layout.tmpl",
+		"ui/html/footer.partial.tmpl",
+	}
+
+	//парсинг файлов шаблонов
+	ts, err := template.ParseFiles(files...)
 	//отображаем весь вывод на странице
-	fmt.Fprintf(write, "%v", s)
+	//fmt.Fprintf(write, "%v", s)
+
+	//выполняем шаблоны. Передача models.Snippet в качестве последнего параметра
+	err = ts.Execute(write, s)
+	if err != nil {
+		app.serverError(write, err)
+	}
 
 	//write.Write([]byte("showSnippet"))
 

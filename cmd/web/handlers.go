@@ -3,7 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
-	"html/template"
+	"html/template" // экранирует любые данные от XSS
 	"net/http"
 	"strconv"
 	"test_web/pkg/models"
@@ -96,6 +96,9 @@ func (app *application) showSnippet(write http.ResponseWriter, request *http.Req
 		}
 		return
 	}
+	//создаем экземпляр структуры templateData, содержащей данные заметки
+	data := &templateData{Snippet: s}
+
 	//Инцелизируем срез, содержащий путь к файлу show.page.tmpl,
 	//добавив еще базовый шаблон и часть футера
 	files := []string{
@@ -109,8 +112,8 @@ func (app *application) showSnippet(write http.ResponseWriter, request *http.Req
 	//отображаем весь вывод на странице
 	//fmt.Fprintf(write, "%v", s)
 
-	//выполняем шаблоны. Передача models.Snippet в качестве последнего параметра
-	err = ts.Execute(write, s)
+	//выполняем шаблоны. Передаем структуру в качестве данных для шаблона
+	err = ts.Execute(write, data)
 	if err != nil {
 		app.serverError(write, err)
 	}

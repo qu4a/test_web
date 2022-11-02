@@ -33,3 +33,20 @@ func (app *application) clientError(write http.ResponseWriter, status int) {
 func (app *application) notFound(write http.ResponseWriter) {
 	app.clientError(write, http.StatusNotFound)
 }
+
+// слздаем метод render, чтобы было можно легко отображать шаблоны из кэша
+func (app *application) render(write http.ResponseWriter, request *http.Request, name string, td *templateData) {
+	// Извлекаем соответствующий набор шаблонов из кэша в зависимости от названия страницы
+	// (например, 'home.page.tmpl'). Если в кэше нет записи запрашиваемого шаблона, то
+	// вызывается вспомогательный метод serverError(), который мы создали ранее.
+	ts, ok := app.templateCache[name]
+	if !ok {
+		app.serverError(write, fmt.Errorf("Шаблон %s не существует!", name))
+		return
+	}
+	// Рендерим файлы шаблона, передавая динамические данные из переменной `td`.
+	err := ts.Execute(write, td)
+	if err != nil {
+		app.serverError(write, err)
+	}
+}

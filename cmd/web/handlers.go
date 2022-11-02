@@ -3,7 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
-	"html/template" // экранирует любые данные от XSS
+	//"html/template" // экранирует любые данные от XSS
 	"net/http"
 	"strconv"
 	"test_web/pkg/models"
@@ -28,9 +28,12 @@ func (app *application) index(write http.ResponseWriter, request *http.Request) 
 		app.serverError(write, err)
 		return
 	}
-	for _, snippet := range s {
-		fmt.Fprintf(write, "%v\n", snippet)
-	}
+	//for _, snippet := range s {
+	//fmt.Fprintf(write, "%v\n", snippet)
+	//}
+
+	//сощдаем экземпляр структуры templateData
+	//data := &templateData{Snippets: s}
 
 	// Инициализируем срез содержащий пути к двум файлам. Обратите внимание, что
 	// файл home.page.tmpl должен быть *первым* файлом в срезе.
@@ -54,7 +57,7 @@ func (app *application) index(write http.ResponseWriter, request *http.Request) 
 	// Затем мы используем метод Execute() для записи содержимого
 	// шаблона в тело HTTP ответа. Последний параметр в Execute() предоставляет
 	// возможность отправки динамических данных в шаблон.
-	//err = ts.Execute(write, nil)
+	//err = ts.Execute(write, data) - убираем запуск шаблона т.к есть render
 	/*
 		Обновляем код для использования логгера-ошибок из структуры application.
 	*/
@@ -68,6 +71,11 @@ func (app *application) index(write http.ResponseWriter, request *http.Request) 
 	//	app.serverError(write, err)
 	//	return
 	//}
+
+	//используем помощника render() для отображения шаблона
+	app.render(write, request, "home.page.tmpl", &templateData{
+		Snippets: s,
+	})
 }
 
 /*
@@ -97,26 +105,30 @@ func (app *application) showSnippet(write http.ResponseWriter, request *http.Req
 		return
 	}
 	//создаем экземпляр структуры templateData, содержащей данные заметки
-	data := &templateData{Snippet: s}
+	//data := &templateData{Snippet: s}
 
 	//Инцелизируем срез, содержащий путь к файлу show.page.tmpl,
 	//добавив еще базовый шаблон и часть футера
-	files := []string{
-		"ui/html/show.page.tmpl",
-		"ui/html/base.layout.tmpl",
-		"ui/html/footer.partial.tmpl",
-	}
+	//files := []string{
+	//	"ui/html/show.page.tmpl",
+	//	"ui/html/base.layout.tmpl",
+	//	"ui/html/footer.partial.tmpl",
+	//}
 
 	//парсинг файлов шаблонов
-	ts, err := template.ParseFiles(files...)
+	//ts, err := template.ParseFiles(files...)
 	//отображаем весь вывод на странице
 	//fmt.Fprintf(write, "%v", s)
 
 	//выполняем шаблоны. Передаем структуру в качестве данных для шаблона
-	err = ts.Execute(write, data)
-	if err != nil {
-		app.serverError(write, err)
-	}
+	//err = ts.Execute(write, data)
+	//if err != nil {
+	//	app.serverError(write, err)
+	//}
+
+	app.render(write, request, "show.page.tmpl", &templateData{
+		Snippet: s,
+	})
 
 	//write.Write([]byte("showSnippet"))
 

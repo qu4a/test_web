@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"flag"
 	_ "github.com/go-sql-driver/mysql"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -19,9 +20,11 @@ import (
 */
 
 type application struct {
-	errorLog *log.Logger
-	infoLog  *log.Logger
-	snippet  *mysql.SnippetModel
+	errorLog      *log.Logger
+	infoLog       *log.Logger
+	snippet       *mysql.SnippetModel
+	templateCache map[string]*template.Template // добавлем поле в структуру зависимостей. Это позволит получать
+	// доступ к кэшу во всех обработчиках
 }
 
 func main() {
@@ -74,12 +77,19 @@ func main() {
 	}
 	//Вызываем отложенный выхов функции чтобы пулл соедиения был закрыт до выхода из  main()
 	defer db.Close()
+	//инициализируем новый кэш шаблона
+	templateCache, err := newTemplateCache("./ui/html/")
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+
 	// Инициализируем новую структуру с зависимостями приложения.
 	//Инициализируем экземпляр mysql.SnippetModel и добавляем его в зависимостях.
 	app := &application{
-		errorLog: errorLog,
-		infoLog:  infoLog,
-		snippet:  &mysql.SnippetModel{DB: db},
+		errorLog:      errorLog,
+		infoLog:       infoLog,
+		snippet:       &mysql.SnippetModel{DB: db},
+		templateCache: templateCache, //добовляем его в зависимости нашего веб-приложения
 	}
 	/* Перенос объявление маршрутов в routes.go
 	mux := http.NewServeMux()
